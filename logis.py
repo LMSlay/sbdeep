@@ -133,7 +133,7 @@ def main():
 
     weigth = range(len(classifier.params))
 
-    stoping_codition = True
+    stoping_condition = True
 
 
 
@@ -141,7 +141,7 @@ def main():
 
     iter = 0
 
-    while stoping_codition:
+    while stoping_condition:
 
         iter +=1
 
@@ -162,7 +162,7 @@ def main():
 
         if (iter>1) and (test_set_error > best_validation_loss):
             print "Best vali:%s" % (best_validation_loss)
-            stoping_codition=False
+            stoping_condition=False
 
     for p,w in zip(classifier.params,weigth):
         p.set_value(w)
