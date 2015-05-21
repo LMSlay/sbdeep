@@ -131,11 +131,11 @@ def main():
         updates=updates,
     )
 
-
+    weigth = range(len(classifier.params))
 
     stoping_codition = True
 
-    weigth = classifier.params
+
 
     best_validation_loss = 100
 
@@ -157,17 +157,22 @@ def main():
 
         if test_set_error < best_validation_loss:
             best_validation_loss = test_set_error
-            weigth = classifier.params
+            for i,p in enumerate(classifier.params):
+                weigth[i] = p.get_value()
 
         if (iter>1) and (test_set_error > best_validation_loss):
             print "Best vali:%s" % (best_validation_loss)
             stoping_codition=False
 
+    for p,w in zip(classifier.params,weigth):
+        p.set_value(w)
 
+    vail_model = theano.function(
+        inputs=[x,y],
+        outputs=cost,
+        )
 
-    classifier.params = weigth
-
-    print "vail loss:%s" % (test_model(X_test.astype(numpy.float64),y_test))
+    print "vail loss:%s" % (vail_model(X_test.astype(numpy.float64),y_test))
 
 
 if __name__ == "__main__":

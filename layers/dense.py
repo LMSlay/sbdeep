@@ -1,6 +1,7 @@
 import numpy
 import theano
 import theano.tensor as T
+from util.nonlinearities import *
 
 __all__ = ["DenseLayer"]
 
@@ -9,7 +10,7 @@ __all__ = ["DenseLayer"]
 class DenseLayer(object):
 
 
-    def __init__(self,input,n_in,n_out,W=None,b=None,activation=T.tanh):
+    def __init__(self,input,n_in,n_out,W=None,b=None,activation=tanh):
 
 
         self.input = input
