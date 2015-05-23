@@ -5,11 +5,16 @@ import theano.tensor as T
 
 import numpy
 
+# sbdeep comp
+
+from util import stopping
+
+# for test
 from sklearn.datasets import make_classification
 from sklearn.metrics import confusion_matrix,matthews_corrcoef
 from sklearn import svm
 
-import util
+import dutil
 
 theano.config.optimizer='None'
 
@@ -93,7 +98,7 @@ class MLP(object):
 
 def main():
 
-    X_train, X_test, y_train, y_test, index_train, index_test = util.load_titanic()
+    X_train, X_test, y_train, y_test, index_train, index_test = dutil.load_titanic()
 
     x = T.matrix("x")
     y = T.matrix("y")
@@ -133,7 +138,7 @@ def main():
 
     weigth = range(len(classifier.params))
 
-    stoping_condition = True
+    stoping_condition = False
 
 
 
@@ -141,28 +146,37 @@ def main():
 
     iter = 0
 
-    while stoping_condition:
+    train_set_error = []
+    vail_set_error = []
+
+    while not stoping_condition:
 
         iter +=1
 
-        train_set_error =  train_model(X_train.astype(numpy.float64),y_train)
+        train_error =  train_model(X_train.astype(numpy.float64),y_train)
 
-        test_set_error = test_model(X_test.astype(numpy.float64),y_test)
+        vail_error = test_model(X_test.astype(numpy.float64),y_test)
 
         print "iter:%i train error:%s vali error:%s" % (
             iter,
-            str(train_set_error),
-            str(test_set_error),
+            str(train_error),
+            str(vail_error),
         )
 
-        if test_set_error < best_validation_loss:
-            best_validation_loss = test_set_error
-            for i,p in enumerate(classifier.params):
-                weigth[i] = p.get_value()
+        train_set_error.append(train_error)
+        vail_set_error.append(vail_error)
 
-        if (iter>1) and (test_set_error > best_validation_loss):
+        stoping_condition = stopping.st3_early_stopping(train_error=train_set_error,vail_error=vail_set_error)
+
+        if not stoping_condition:
+
+            if vail_error<best_validation_loss:
+                best_validation_loss = vail_error
+                for i,p in enumerate(classifier.params):
+                    weigth[i] = p.get_value()
+
+        if (iter>1) and stoping_condition:
             print "Best vali:%s" % (best_validation_loss)
-            stoping_condition=False
 
     for p,w in zip(classifier.params,weigth):
         p.set_value(w)
