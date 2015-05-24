@@ -8,6 +8,8 @@ import numpy
 # sbdeep comp
 
 from util import stopping
+from layers import dense
+from util.nonlinearities import *
 
 # for test
 from sklearn.datasets import make_classification
@@ -16,11 +18,11 @@ from sklearn import svm
 
 import dutil
 
-theano.config.optimizer='None'
+#theano.config.optimizer='None'
 
 class LogisticRegression(object):
 
-    def __init__(self,input,n_in,n_out):
+    def __init__(self, input, n_in, n_out,  W=None, b=None, activation=softmax):
 
         self.input = input
 
@@ -33,43 +35,12 @@ class LogisticRegression(object):
             value=numpy.zeros((n_out,))
         )
 
-        self.p_1 =1 / (1 + T.exp(-T.dot(self.input, self.W) - self.b))
-
-        self.params = [self.W,self.b]
-
-class HiddenLayer(object):
-
-
-    def __init__(self,input,n_in,n_out,W=None,b=None,activation=T.tanh):
-
-
-        self.input = input
-
-
-        if W==None:
-            W_values = numpy.asarray(
-                numpy.random.uniform(
-                    low=-numpy.sqrt(6. / (n_in + n_out)),
-                    high=numpy.sqrt(6. / (n_in + n_out)),
-                    size=(n_in,n_out)),
-                dtype=theano.config.floatX,
-                )
-            W = theano.shared(value=W_values,name="W",borrow=True)
-
-        if b==None:
-            b = theano.shared(
-                value=numpy.zeros((n_out,), dtype=theano.config.floatX),
-                name="b",
-                borrow=True
-            )
-
-        self.W = W
-        self.b = b
-
         dot_comput = T.dot(input,self.W)+self.b
         self.output = activation(dot_comput)
 
         self.params = [self.W,self.b]
+
+
 
 
 class MLP(object):
@@ -78,7 +49,7 @@ class MLP(object):
     def __init__(self,input,n_in,n_out):
 
 
-        self.hiddenlayer = HiddenLayer(
+        self.hiddenlayer = dense.DenseLayer(
             input=input,
             n_in=n_in,
             n_out=n_out,
@@ -87,21 +58,24 @@ class MLP(object):
         self.outputlayer = LogisticRegression(
             input=self.hiddenlayer.output,
             n_in=n_out,
-            n_out=1
+            n_out=2
         )
 
 
 
-        self.p_1 = self.outputlayer.p_1
+        self.output = self.outputlayer.output
 
         self.params = self.hiddenlayer.params + self.outputlayer.params
+
+    def negative_log_likelihood(self, y):
+        return -T.mean(T.log(self.output)[T.arange(y.shape[0]), y])
 
 def main():
 
     X_train, X_test, y_train, y_test, index_train, index_test = dutil.load_titanic()
 
     x = T.matrix("x")
-    y = T.matrix("y")
+    y = T.ivector('y')
 
     other_data = make_classification()
 
@@ -113,10 +87,9 @@ def main():
         n_out=20
     )
 
+    cost = classifier.negative_log_likelihood(y)
 
-    cost = (-y * T.log(classifier.p_1) - (1-y) * T.log(1-classifier.p_1)).mean() + 0.01 * (classifier.params[0] ** 2).sum()
-
-    prediction = classifier.p_1 >0.5
+    prediction = T.argmax(classifier.output, axis=1)
 
     gparams = [T.grad(cost, param) for param in classifier.params]
 
@@ -153,9 +126,9 @@ def main():
 
         iter +=1
 
-        train_error =  train_model(X_train.astype(numpy.float64),y_train)
+        train_error =  train_model(X_train.astype(numpy.float64),y_train.reshape(1,y_train.shape[0])[0].astype(numpy.int32))
 
-        vail_error = test_model(X_test.astype(numpy.float64),y_test)
+        vail_error = test_model(X_test.astype(numpy.float64),y_test.reshape(1,y_test.shape[0])[0].astype(numpy.int32))
 
         print "iter:%i train error:%s vali error:%s" % (
             iter,
@@ -186,7 +159,7 @@ def main():
         outputs=cost,
         )
 
-    print "vail loss:%s" % (vail_model(X_test.astype(numpy.float64),y_test))
+    print "vail loss:%s" % (vail_model(X_test.astype(numpy.float64),y_test.reshape(1,y_test.shape[0])[0].astype(numpy.int32)))
 
 
 if __name__ == "__main__":

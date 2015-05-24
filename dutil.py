@@ -1,6 +1,7 @@
 
 import pandas as pd
 import numpy
+import theano.tensor as T
 from sklearn.cross_validation import train_test_split
 
 numpy.dtype(numpy.float64)
@@ -27,3 +28,6 @@ def load_titanic(dataset=pd.read_csv('/Users/slay/Downloads/train.csv')):
     X_train, X_test, y_train, y_test, index_train, index_test = train_test_split(dataset, dataset_y, dataset.index, test_size=0.2)
 
     return X_train, X_test, y_train, y_test, index_train, index_test
+
+def negative_log_likelihood(prob_y, y):
+    return -T.mean(T.log(prob_y)[T.arange(y.shape[0]), y])

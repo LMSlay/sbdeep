@@ -10,7 +10,7 @@ __all__ = ["DenseLayer"]
 class DenseLayer(object):
 
 
-    def __init__(self,input,n_in,n_out,W=None,b=None,activation=tanh):
+    def __init__(self, input, n_in, n_out, W=None, b=None, activation=tanh):
 
 
         self.input = input
