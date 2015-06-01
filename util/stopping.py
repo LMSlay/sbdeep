@@ -47,7 +47,7 @@ def st1_early_stopping(train_error, vail_error, alphe=20.):
         return False
 
 
-def st2_early_stopping(train_error, vail_error, alphe=500, strips=5):
+def st2_early_stopping(train_error, vail_error, alphe=500, strips=3):
     # shit!!!!
     if len(train_error)<strips:
         return False
