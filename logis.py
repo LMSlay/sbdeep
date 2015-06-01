@@ -37,7 +37,7 @@ def test():
 
     model.add(dense.DenseLayer(7, 20, name="hiddenLayer"))
 
-    model.add(dense.DenseLayer(20, 2, name="outputLayer", W_init=defa, activation=softmax))
+    model.add(dense.DenseLayer(20, 2, name="outputLayer", W_init=defa, activation=softmax, learning_rate=0.001))
 
     model.fit(X_train, X_test, y_train, y_test,)
 

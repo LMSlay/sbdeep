@@ -35,19 +35,27 @@ class Classification(object):
 
     def fit(self, X_train, X_test, y_train, y_test,):
 
-        learning_rate = 0.01
-
         self.x = T.matrix("x")
 
         self.y = T.ivector('y')
 
         cost = self.negative_log_likelihood()
 
+        print self.params
+
+        #fine tuning
+        learning_rates = []
+        for layer in self.layers:
+            learning_rates.append(layer.learning_rate)
+            learning_rates.append(layer.learning_rate)
+
         gparams = [T.grad(cost, param) for param in self.params]
+
+        print zip(self.params, gparams, learning_rates)
 
         updates = [
             (param, param - learning_rate * gparam)
-            for param, gparam in zip(self.params, gparams)
+            for param, gparam, learning_rate in zip(self.params, gparams, learning_rates)
         ]
 
         vail_model = theano.function(

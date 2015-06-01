@@ -10,7 +10,8 @@ __all__ = ["DenseLayer"]
 class DenseLayer(object):
 
 
-    def __init__(self, n_in, n_out, name, W_init=Glorot, b=None, activation=tanh):
+    def __init__(self, n_in, n_out, name,
+                 W_init=Glorot, b=None, activation=tanh, learning_rate=0.001):
 
 
         self.input = input
@@ -27,6 +28,7 @@ class DenseLayer(object):
         self.W = W
         self.b = b
         self.activation = activation
+        self.learning_rate=learning_rate
 
 
         self.params = [self.W,self.b]
